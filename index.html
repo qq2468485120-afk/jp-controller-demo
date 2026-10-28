@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#151522">
+<meta name="description" content="ふたりの時間 - スマートフォン向けリモートコントローラーのシミュレーションデモ">
+<title>ふたりの時間 | コントローラー DEMO</title>
+<style>
+:root{color-scheme:dark;--bg:#151522;--panel:#202031;--panel2:#29293d;--line:#3a3a52;--text:#f7f5ff;--muted:#aaa9c3;--pink:#ff6ba6;--violet:#9b82ff;--mint:#75e5c0}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -15%,#3b2750 0,transparent 50%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans JP","Yu Gothic",sans-serif}
+button,input{font:inherit}button{touch-action:manipulation;cursor:pointer}
+.app{width:min(100%,480px);margin:auto;padding:calc(18px + env(safe-area-inset-top)) 15px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;gap:11px;margin:4px 2px 18px}
+.logo{width:47px;height:47px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(140deg,var(--pink),var(--violet));font-size:25px;box-shadow:0 8px 28px #ff6ba633}
+h1{font-size:17px;line-height:1.3;margin:0;letter-spacing:.03em}
+.kicker{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.1em}
+.demo{margin-left:auto;border:1px solid #67527f;background:#30263f;color:#e7d8ff;border-radius:99px;padding:6px 9px;font-size:10px;letter-spacing:.07em}
+.card{background:linear-gradient(150deg,#242438,#1d1d2c);border:1px solid var(--line);border-radius:22px;padding:17px;margin:0 0 13px;box-shadow:0 12px 30px #0002}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.status-label,.section-label{font-size:12px;color:var(--muted)}
+.status{display:flex;align-items:center;gap:7px;color:var(--mint);font-size:11px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px #75e5c077}
+.stage{height:170px;display:grid;place-items:center;position:relative;overflow:hidden}
+.orbit{width:132px;height:132px;border-radius:50%;border:1px solid #ff6ba633;display:grid;place-items:center;position:relative}
+.orbit:before,.orbit:after{content:"";position:absolute;inset:12px;border:1px solid #9b82ff40;border-radius:50%}
+.orbit:after{inset:26px;border-color:#ff6ba655}
+.core{width:62px;height:62px;border-radius:22px;background:linear-gradient(140deg,var(--pink),var(--violet));display:grid;place-items:center;font-size:26px;box-shadow:0 0 30px #ff6ba633;transition:transform .2s}
+.stage.running .orbit{animation:orbit 1.35s ease-in-out infinite}
+.stage.running .core{animation:core .38s ease-in-out infinite alternate}
+@keyframes orbit{50%{transform:scale(1.055);box-shadow:0 0 0 15px #ff6ba308}}
+@keyframes core{from{transform:rotate(-7deg) scale(.97)}to{transform:rotate(7deg) scale(1.04)}}
+.state{text-align:center;font-size:14px;font-weight:750;margin-top:-4px}
+.hint{text-align:center;color:var(--muted);font-size:11px;line-height:1.6;margin-top:5px}
+.visualizer{height:40px;display:flex;align-items:center;justify-content:center;gap:4px;margin:5px 0 0}
+.bar{height:7px;width:4px;border-radius:5px;background:linear-gradient(to top,var(--violet),var(--pink));opacity:.6}
+.visualizer.running .bar{animation:bars .48s ease-in-out infinite alternate}
+.visualizer.running .bar:nth-child(3n){animation-delay:.13s}.visualizer.running .bar:nth-child(2n){animation-delay:.24s}.visualizer.running .bar:nth-child(5n){animation-delay:.32s}
+@keyframes bars{to{height:var(--h);opacity:1}}
+.primary{width:100%;border:0;border-radius:15px;padding:15px 12px;margin-top:10px;background:linear-gradient(100deg,var(--pink),#a17aff);color:white;font-size:15px;font-weight:800;box-shadow:0 8px 24px #a17aff24}
+.primary.stop{background:linear-gradient(100deg,#ed5c7d,#a64b7e)}
+.section-title{font-size:13px;font-weight:750;margin:0 0 13px}
+.val{font-size:19px;font-weight:800;color:#ff8bb9;font-variant-numeric:tabular-nums}
+input[type=range]{display:block;width:100%;height:28px;accent-color:var(--pink);margin:6px 0}
+.scale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mode{min-height:72px;border:1px solid var(--line);border-radius:14px;background:#191927;color:#dedbed;padding:10px 4px;font-size:11px}
+.mode .emoji{display:block;font-size:20px;margin-bottom:5px}
+.mode.active{border-color:var(--pink);background:#40283d;color:white;box-shadow:inset 0 0 0 1px #ff6ba622}
+.note{font-size:11px;line-height:1.8;color:var(--muted);margin:0}
+footer{text-align:center;color:#8e8da8;font-size:10px;line-height:1.8;padding:7px 12px 0}
+button:focus-visible,input:focus-visible{outline:2px solid white;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+ <div class="logo" aria-hidden="true">♡</div>
+ <div><h1>ふたりの時間</h1><div class="kicker">リモートコントローラー</div></div>
+ <span class="demo">DEMO</span>
+</header>
+<section class="card" aria-label="デモコントローラー">
+ <div class="row"><span class="status-label">デバイス状態</span><span class="status"><i class="dot"></i>シミュレーション</span></div>
+ <div class="stage" id="stage"><div class="orbit"><div class="core">♡</div></div></div>
+ <div class="state" id="state">停止中</div>
+ <div class="hint" id="hint" aria-live="polite">画面上のアニメーションだけを表示します</div>
+ <div class="visualizer" id="visualizer" aria-hidden="true"></div>
+ <button class="primary" id="toggle" type="button">▶ 開始</button>
+</section>
+<section class="card">
+ <div class="row"><label class="section-title" for="strength">振動強度</label><span class="val"><span id="strengthVal">35</span>%</span></div>
+ <input id="strength" type="range" min="0" max="100" value="35" aria-label="振動強度">
+ <div class="scale"><span>弱</span><span>中</span><span>強</span></div>
+</section>
+<section class="card">
+ <h2 class="section-title">モードを選択</h2>
+ <div class="modes" id="modes">
+  <button class="mode active" data-mode="steady" type="button"><span class="emoji">〰️</span>連続</button>
+  <button class="mode" data-mode="pulse" type="button"><span class="emoji">💗</span>パルス</button>
+  <button class="mode" data-mode="wave" type="button"><span class="emoji">🌊</span>波形</button>
+  <button class="mode" data-mode="soft" type="button"><span class="emoji">☁️</span>やさしい</button>
+  <button class="mode" data-mode="rhythm" type="button"><span class="emoji">🎵</span>リズム</button>
+  <button class="mode" data-mode="random" type="button"><span class="emoji">✨</span>ランダム</button>
+ </div>
+</section>
+<section class="card">
+ <div class="row" style="margin-bottom:8px"><span class="section-label">現在の設定</span><strong id="modeLabel" style="font-size:12px;color:#ff8bb9">連続</strong></div>
+ <p class="note">「開始」を押すとアニメーションが動きます。強度とモードを変更して、画面の動作を確認できます。</p>
+</section>
+<footer>このページは画面表示のみのシミュレーションです。<br>実際の振動・機器接続・遠隔操作は行いません。</footer>
+</main>
+<script>
+(() => {
+ const $ = id => document.getElementById(id);
+ const stage=$('stage'), toggle=$('toggle'), state=$('state'), hint=$('hint');
+ const strength=$('strength'), strengthVal=$('strengthVal'), visualizer=$('visualizer'), modeLabel=$('modeLabel');
+ const modeNames={steady:'連続',pulse:'パルス',wave:'波形',soft:'やさしい',rhythm:'リズム',random:'ランダム'};
+ let running=false;
+ for(let i=0;i<25;i++){const b=document.createElement('i');b.className='bar';b.style.setProperty('--h',(12+Math.abs(Math.sin(i*1.7))*31)+'px');visualizer.appendChild(b)}
+ function render(){
+  const selected=document.querySelector('.mode.active');
+  const name=modeNames[selected.dataset.mode];
+  stage.classList.toggle('running',running);
+  visualizer.classList.toggle('running',running && Number(strength.value)>0);
+  toggle.classList.toggle('stop',running);
+  toggle.textContent=running?'■ 停止':'▶ 開始';
+  state.textContent=running?'シミュレーション中':'停止中';
+  hint.textContent=running?`モード：${name} ／ 強度：${strength.value}%`:'画面上のアニメーションだけを表示します';
+  strengthVal.textContent=strength.value;
+  modeLabel.textContent=name;
+ }
+ toggle.addEventListener('click',()=>{running=!running;render()});
+ strength.addEventListener('input',render);
+ document.querySelectorAll('.mode').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelectorAll('.mode').forEach(item=>item.classList.remove('active'));
+  button.classList.add('active');render();
+ }));
+ render();
+})();
+</script>
+</body>
+</html>
